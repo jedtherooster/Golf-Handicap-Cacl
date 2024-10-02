@@ -1,0 +1,106 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f7f7f7;
+  }
+  
+  h1, h2 {
+    text-align: center;
+  }
+  
+  form {
+    max-width: 500px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  .result, .scorecards-container {
+    max-width: 700px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .scorecards-container table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .scorecards-container th, .scorecards-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .scorecards-container th {
+    background-color: #f2f2f2;
+  }
+  
+  @media (max-width: 600px) {
+    .scorecards-container table, .scorecards-container th, .scorecards-container td {
+      display: block;
+    }
+  
+    .scorecards-container th {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+  
+    .scorecards-container td {
+      border: none;
+      position: relative;
+      padding-left: 50%;
+      text-align: left;
+    }
+  
+    .scorecards-container td:before {
+      position: absolute;
+      top: 0;
+      left: 10px;
+      width: 45%;
+      padding-right: 10px;
+      white-space: nowrap;
+      font-weight: bold;
+    }
+  
+    .scorecards-container td:nth-of-type(1):before { content: "Score"; }
+    .scorecards-container td:nth-of-type(2):before { content: "Course Rating"; }
+    .scorecards-container td:nth-of-type(3):before { content: "Slope Rating"; }
+    .scorecards-container td:nth-of-type(4):before { content: "Date"; }
+  }
+  

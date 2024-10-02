@@ -1,67 +1,104 @@
-const express = require('express');
-const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
-const app = express();
+const form = document.getElementById('scorecard-form');
+const calculateBtn = document.getElementById('calculate-handicap');
+const handicapResult = document.getElementById('handicap-result');
+const scorecardsTableBody = document.querySelector('#scorecards-table tbody');
 
-app.use(cors());
-app.use(express.json());
+// Function to fetch and display all scorecards
+async function fetchAndDisplayScorecards() {
+  try {
+    const response = await fetch('http://localhost:3000/all-scorecards');
+    if (!response.ok) {
+      throw new Error('Failed to fetch scorecards');
+    }
+    const data = await response.json();
+    displayScorecards(data.scorecards);
+  } catch (error) {
+    console.error('Error fetching scorecards:', error);
+  }
+}
 
-// Create or connect to SQLite database
-const db = new sqlite3.Database('./golf-handicap.db', (err) => {
-  if (err) {
-    console.error('Error opening database:', err.message);
-  } else {
-    console.log('Connected to the golf-handicap database.');
+// Function to display scorecards in the table
+function displayScorecards(scorecards) {
+  scorecardsTableBody.innerHTML = ''; // Clear existing rows
+  if (scorecards.length === 0) {
+    scorecardsTableBody.innerHTML = '<tr><td colspan="4">No scorecards submitted yet.</td></tr>';
+    return;
+  }
+  scorecards.forEach(card => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${card.score}</td>
+      <td>${card.courseRating}</td>
+      <td>${card.slopeRating}</td>
+      <td>${new Date(card.date).toLocaleDateString()}</td>
+    `;
+    scorecardsTableBody.appendChild(row);
+  });
+}
+
+// Submit Scorecard Form
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();  // Prevents the page from refreshing
+
+  const score = document.getElementById('score').value;
+  const courseRating = document.getElementById('courseRating').value; // Correct ID
+  const slopeRating = document.getElementById('slopeRating').value;   // Correct ID
+  const date = document.getElementById('date').value; // Include the date
+
+  // Check for empty values and log them for debugging
+  if (!score || !courseRating || !slopeRating || !date) {
+    console.error('One or more required fields are empty:', {
+      score,
+      courseRating,
+      slopeRating,
+      date,
+    });
+    alert('Error: Missing required fields');
+    return; // Exit if any required field is missing
+  }
+
+  try {
+    const response = await fetch('http://localhost:3000/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        score: parseInt(score),
+        courseRating: parseFloat(courseRating),
+        slopeRating: parseInt(slopeRating),
+        date: date, // Include the date in the request
+      }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert('Scorecard submitted successfully!');
+      form.reset();
+      fetchAndDisplayScorecards(); // Refresh the scorecards table
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (error) {
+    console.error('Error submitting scorecard:', error);
+    alert('An error occurred while submitting the scorecard.');
   }
 });
 
-// Create the scorecards table if it doesn't exist
-db.run(`
-  CREATE TABLE IF NOT EXISTS scorecards (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    score INTEGER,
-    courseRating REAL,
-    slopeRating INTEGER,
-    date TEXT
-  )
-`);
-
-// Add a new scorecard
-app.post('/submit', (req, res) => {
-  const { score, courseRating, slopeRating } = req.body;
-  const date = new Date().toISOString();
-
-  const query = `
-    INSERT INTO scorecards (score, courseRating, slopeRating, date)
-    VALUES (?, ?, ?, ?)
-  `;
-  db.run(query, [score, courseRating, slopeRating, date], function (err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
+// Calculate Handicap Button
+calculateBtn.addEventListener('click', async () => {
+  try {
+    const response = await fetch('http://localhost:3000/best6');
+    if (!response.ok) {
+      throw new Error('Failed to calculate handicap');
     }
-    res.json({ message: 'Scorecard added successfully', id: this.lastID });
-  });
+    const data = await response.json();
+    handicapResult.innerText = `Your Handicap (Best 6): ${data.handicap}`;
+  } catch (error) {
+    console.error('Error calculating handicap:', error);
+    handicapResult.innerText = 'Error calculating handicap.';
+  }
 });
 
-// Get the best 6 scorecards for handicap calculation
-app.get('/best6', (req, res) => {
-  const query = `
-    SELECT * FROM scorecards
-    ORDER BY (score - courseRating) * 113 / slopeRating
-    LIMIT 6
-  `;
-  db.all(query, [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    
-    // Calculate the handicap based on the best 6 scorecards
-    const handicapDifferentials = rows.map(row => ((row.score - row.courseRating) * 113) / row.slopeRating);
-    const averageHandicap = handicapDifferentials.reduce((acc, val) => acc + val, 0) / handicapDifferentials.length;
-    res.json({ handicap: averageHandicap.toFixed(2), scorecards: rows });
-  });
-});
-
-app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
-});
+// Initial fetch of scorecards on page load
+window.onload = fetchAndDisplayScorecards;

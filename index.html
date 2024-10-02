@@ -4,129 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Golf Handicap Calculator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f7f7f7;
-    }
-
-    h1, h2 {
-      text-align: center;
-    }
-
-    form {
-      max-width: 500px;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px;
-      border: none;
-      width: 100%;
-      cursor: pointer;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    .result, .scorecards-container {
-      max-width: 700px;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .scorecards-container table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .scorecards-container th, .scorecards-container td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: center;
-    }
-
-    .scorecards-container th {
-      background-color: #f2f2f2;
-    }
-
-    @media (max-width: 600px) {
-      .scorecards-container table, .scorecards-container th, .scorecards-container td {
-        display: block;
-      }
-
-      .scorecards-container th {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-      }
-
-      .scorecards-container td {
-        border: none;
-        position: relative;
-        padding-left: 50%;
-        text-align: left;
-      }
-
-      .scorecards-container td:before {
-        position: absolute;
-        top: 0;
-        left: 10px;
-        width: 45%;
-        padding-right: 10px;
-        white-space: nowrap;
-        font-weight: bold;
-      }
-
-      .scorecards-container td:nth-of-type(1):before { content: "Score"; }
-      .scorecards-container td:nth-of-type(2):before { content: "Course Rating"; }
-      .scorecards-container td:nth-of-type(3):before { content: "Slope Rating"; }
-      .scorecards-container td:nth-of-type(4):before { content: "Date"; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css"> <!-- Link to the CSS file -->
 </head>
 <body>
   <h1>Golf Handicap Calculator</h1>
 
   <!-- Form to Submit Scorecards -->
   <form id="scorecard-form">
-    <label for="score">Score:</label>
-    <input type="number" id="score" name="score" required min="0" placeholder="Enter your score">
-
-    <label for="course-rating">Course Rating:</label>
-    <input type="number" id="course-rating" name="courseRating" step="0.1" required min="0" placeholder="Enter course rating">
-
-    <label for="slope-rating">Slope Rating:</label>
-    <input type="number" id="slope-rating" name="slopeRating" required min="55" max="155" placeholder="Enter slope rating (55-155)">
-
-    <button type="submit">Submit Scorecard</button>
+    <input type="number" id="score" placeholder="Score" required />
+    <input type="number" id="courseRating" placeholder="Course Rating" required />
+    <input type="number" id="slopeRating" placeholder="Slope Rating" required />
+    <input type="date" id="date" placeholder="Date" required />
+    <button type="submit">Submit</button>
   </form>
 
   <!-- Button to Calculate Handicap -->
@@ -153,97 +42,6 @@
     </table>
   </div>
 
-  <script>
-    const form = document.getElementById('scorecard-form');
-    const calculateBtn = document.getElementById('calculate-handicap');
-    const handicapResult = document.getElementById('handicap-result');
-    const scorecardsTableBody = document.querySelector('#scorecards-table tbody');
-
-    // Function to fetch and display all scorecards
-    async function fetchAndDisplayScorecards() {
-      try {
-        const response = await fetch('http://localhost:3000/all-scorecards');
-        if (!response.ok) {
-          throw new Error('Failed to fetch scorecards');
-        }
-        const data = await response.json();
-        displayScorecards(data.scorecards);
-      } catch (error) {
-        console.error('Error fetching scorecards:', error);
-      }
-    }
-
-    // Function to display scorecards in the table
-    function displayScorecards(scorecards) {
-      scorecardsTableBody.innerHTML = ''; // Clear existing rows
-      if (scorecards.length === 0) {
-        scorecardsTableBody.innerHTML = '<tr><td colspan="4">No scorecards submitted yet.</td></tr>';
-        return;
-      }
-      scorecards.forEach(card => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${card.score}</td>
-          <td>${card.courseRating}</td>
-          <td>${card.slopeRating}</td>
-          <td>${new Date(card.date).toLocaleDateString()}</td>
-        `;
-        scorecardsTableBody.appendChild(row);
-      });
-    }
-
-    // Submit Scorecard Form
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();  // Prevents the page from refreshing
-
-      const score = document.getElementById('score').value;
-      const courseRating = document.getElementById('course-rating').value;
-      const slopeRating = document.getElementById('slope-rating').value;
-
-      try {
-        const response = await fetch('http://localhost:3000/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            score: parseInt(score),
-            courseRating: parseFloat(courseRating),
-            slopeRating: parseInt(slopeRating),
-          }),
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-          alert('Scorecard submitted successfully!');
-          form.reset();
-          fetchAndDisplayScorecards(); // Refresh the scorecards table
-        } else {
-          alert('Error: ' + data.error);
-        }
-      } catch (error) {
-        console.error('Error submitting scorecard:', error);
-        alert('An error occurred while submitting the scorecard.');
-      }
-    });
-
-    // Calculate Handicap Button
-    calculateBtn.addEventListener('click', async () => {
-      try {
-        const response = await fetch('http://localhost:3000/best6');
-        if (!response.ok) {
-          throw new Error('Failed to calculate handicap');
-        }
-        const data = await response.json();
-        handicapResult.innerText = `Your Handicap (Best 6): ${data.handicap}`;
-      } catch (error) {
-        console.error('Error calculating handicap:', error);
-        handicapResult.innerText = 'Error calculating handicap.';
-      }
-    });
-
-    // Initial fetch of scorecards on page load
-    window.onload = fetchAndDisplayScorecards;
-  </script>
+  <script src="app.js"></script> <!-- Link to the JavaScript file -->
 </body>
 </html>
