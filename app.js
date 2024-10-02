@@ -2,6 +2,9 @@ const form = document.getElementById('scorecard-form');
 const calculateBtn = document.getElementById('calculate-handicap');
 const handicapResult = document.getElementById('handicap-result');
 const scorecardsTableBody = document.querySelector('#scorecards-table tbody');
+const sortOrderSelect = document.getElementById('sort-order');
+
+let scorecards = []; // Store fetched scorecards
 
 // Function to fetch and display all scorecards
 async function fetchAndDisplayScorecards() {
@@ -11,7 +14,8 @@ async function fetchAndDisplayScorecards() {
       throw new Error('Failed to fetch scorecards');
     }
     const data = await response.json();
-    displayScorecards(data.scorecards);
+    scorecards = data.scorecards; // Store scorecards in the global variable
+    displayScorecards(scorecards); // Display the scorecards initially
   } catch (error) {
     console.error('Error fetching scorecards:', error);
   }
@@ -98,6 +102,22 @@ calculateBtn.addEventListener('click', async () => {
     console.error('Error calculating handicap:', error);
     handicapResult.innerText = 'Error calculating handicap.';
   }
+});
+
+// Sort Scorecards by Selected Order
+sortOrderSelect.addEventListener('change', () => {
+  const sortBy = sortOrderSelect.value;
+  const sortedScorecards = [...scorecards]; // Create a copy of the scorecards
+
+  sortedScorecards.sort((a, b) => {
+    if (sortBy === 'date') {
+      return new Date(a.date) - new Date(b.date); // Sort by date
+    } else {
+      return a[sortBy] - b[sortBy]; // Sort by other fields
+    }
+  });
+
+  displayScorecards(sortedScorecards); // Display sorted scorecards
 });
 
 // Initial fetch of scorecards on page load
