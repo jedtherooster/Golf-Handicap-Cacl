@@ -90,12 +90,15 @@ app.get('/best6', async (req, res) => {
 
     // Sort the calculated handicaps and take the best 8
     handicaps.sort((a, b) => a - b);
-    const bestHandicaps = handicaps.slice(0, 8); // Adjusted to take best 8 for WHS
+    const bestHandicaps = handicaps.slice(0, 8); // Take the best 8
 
     // Calculate the average of the best handicaps
     const averageHandicap = bestHandicaps.reduce((acc, h) => acc + h, 0) / bestHandicaps.length;
 
-    res.json({ handicap: averageHandicap.toFixed(2) });
+    // Apply the 0.96 factor
+    const finalHandicap = (averageHandicap * 0.96).toFixed(2);
+
+    res.json({ handicap: finalHandicap });
   } catch (err) {
     console.error('Error calculating handicap:', err);
     res.status(500).json({ error: 'Failed to calculate handicap' });
