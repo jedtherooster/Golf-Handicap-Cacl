@@ -18,26 +18,23 @@
     <button type="submit">Submit</button>
   </form>
 
-  <!-- Sort Dropdown -->
-  <div class="sort-container">
-    <label for="sort-order">Sort Scorecards By:</label>
-    <select id="sort-order">
-      <option value="date">Date</option>
-      <option value="score">Score</option>
-      <option value="courseRating">Course Rating</option>
-      <option value="slopeRating">Slope Rating</option>
-    </select>
-  </div>
-
   <!-- Button to Calculate Handicap -->
   <div class="result" style="text-align: center;">
-    <button id="calculate-handicap">Calculate Handicap (Best 6)</button>
+    <button id="calculate-handicap">Calculate Handicap (Best 8)</button>
     <p id="handicap-result" style="font-size: 18px; margin-top: 10px;"></p>
   </div>
 
   <!-- Container to Display Scorecards -->
   <div class="scorecards-container">
     <h2>Your Scorecards</h2>
+    
+    <!-- Add Dropdown for Sorting Scorecards -->
+    <label for="sort-options">Sort by:</label>
+    <select id="sort-options">
+      <option value="score">Score</option>
+      <option value="date">Date</option>
+    </select>
+
     <table id="scorecards-table">
       <thead>
         <tr>
@@ -45,6 +42,7 @@
           <th>Course Rating</th>
           <th>Slope Rating</th>
           <th>Date</th>
+          <th>Action</th> <!-- Add a column for delete action -->
         </tr>
       </thead>
       <tbody>
